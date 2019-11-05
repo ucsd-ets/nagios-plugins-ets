@@ -72,14 +72,14 @@ def parseCmdLine(args):
 
 	if len(devices) ==0:
 		exitWithMessage(3,"UNKNOWN: Error, at least one device must be entered")
-	
+
 	return (options,devices)
 # end
 
 
 def checkDevice(path):
         """Check if device exists and permissions are ok.
-        
+
         Returns:
                 - 0 ok
                 - 1 no such device
@@ -121,12 +121,12 @@ def callSmartMonTools(path, devicetype, device):
         # get health status
 	cmd = "sudo %s -d %s %s -a" % (path, devicetype, device)
         vprint(3, "Get device health status: %s" % cmd)
-	
+
 	sp = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 	# See if smartctl exits cleanly
 	# This is a lot hacky since smartctl output is not consistent. It doesn't always
-	# close output streams stdout, stderr etc. I really don't like the following 
+	# close output streams stdout, stderr etc. I really don't like the following
 	# code - Orcan
 	i = 0
 	poll = False
@@ -137,7 +137,7 @@ def callSmartMonTools(path, devicetype, device):
 		i = i+1
 		vprint(3, "smartctl did not exit yet. Waiting...")
 		time.sleep(0.1)
-		
+
 	if poll: # clean
 		(child_stdin, child_stdout, child_stderr) = (sp.stdin, sp.stdout, sp.stderr)
 		child_stdout = child_stdout.readlines()
@@ -146,7 +146,7 @@ def callSmartMonTools(path, devicetype, device):
 	else: # not clean. let's gather what we have
 		vprint(3, "smartctl did not exit cleanly")
 		(child_stdout, child_stderr) = sp.communicate()
-        	
+
         if len(child_stderr):
                 return (3, "UNKNOWN: call exits unexpectedly (%s)" % child_stderr, "",
                                 "")
@@ -179,7 +179,7 @@ def parseOutput(Message):
 			exitWithMessage(1, "UNKNOWN: " + line)
 		if line.startswith("SMART Health Status:") or line.startswith("SMART overall-health self-assessment"):
 			healthStatus = line.split()[-1]
-		if line.startswith("Current Drive Temperature:"):
+		if line.startswith("Temperature:"):
 			try:
 				temperature = int(line.split()[-2])
 			except:
@@ -289,12 +289,12 @@ if __name__ == "__main__":
 		if value > overallvalue:
 			overallvalue = value
 		full_message.append((value,message))
-		
+
 		full_message = sorted(full_message, key=itemgetter(1))
 		message_string = ""
 		for value,message in full_message:
 			message_string += message + " "
-		
+
 
 	# exit program
 	exitWithMessage(overallvalue, message_string[:-1])
